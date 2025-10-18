@@ -1,0 +1,225 @@
+//
+//  MakeRoute3_1VM.swift
+//  Try-Local
+//
+//  Created by 시모니의 맥북 on 8/28/25.
+//
+
+import Foundation
+import Alamofire
+
+class MakeRoute3_1VM {
+    var token: String = ""
+    var q1: Int = 0
+    var q2: Int = 0
+    var q3: Int = 0
+    var startDate: String = ""
+    var endDate: String = ""
+    
+    var submissionID: Int = 0
+    
+    var routeOvernight: RouteResponse.RouteOvernight?
+    
+    //MARK: 당일코스배열
+    var names: [String] = []
+    var latitudes: [String] = []
+    var longitudes: [String] = []
+    var addresses: [String] = []
+    var imgURLs: [String] = []
+    var types: [String] = []
+    var orders: [String] = []
+    
+    //MARK: 1박2일코스 배열
+    var namesDay1: [String] = []
+    var latitudesDay1: [String] = []
+    var longitudesDay1: [String] = []
+    var addressesDay1: [String] = []
+    var imgURLsDay1: [String] = []
+    var typesDay1: [String] = []
+    var ordersDay1: [String] = []
+    
+    var namesDay2: [String] = []
+    var latitudesDay2: [String] = []
+    var longitudesDay2: [String] = []
+    var addressesDay2: [String] = []
+    var imgURLsDay2: [String] = []
+    var typesDay2: [String] = []
+    var ordersDay2: [String] = []
+    
+    
+    
+    func todayDateFormatter(selectDate: Date) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        let start = selectDate
+        let dateString = formatter.string(from: start)
+        startDate = dateString
+        endDate = dateString
+    }
+    
+    func overnightDateFormatter(selectDate: Date) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        let start = selectDate
+        let dateString = formatter.string(from: start)
+        startDate = dateString
+        
+        if let end = Calendar.current.date(byAdding: .day, value: 1, to: start) {
+            endDate = formatter.string(from: end)
+        }
+        
+    }
+    
+    // MARK: - API 호출
+    func sendRouteRequest(
+        q1: Int,
+        q2: Int,
+        q3: Int,
+        startDate: String,
+        endDate: String,
+        completion: @escaping () -> Void
+    ) {
+        let url = "https://we-did-this.com/route/result"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(token)"
+        ]
+        
+        let params = RouteRequest(
+            q1: q1,
+            q2: q2,
+            q3: q3,
+            start_date: startDate,
+            end_date: endDate
+        )
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: params,
+                   encoder: JSONParameterEncoder.default,
+                   headers: headers)
+        .validate()
+        .responseString { response in
+            print("서버 원본 응답: \(response.value ?? "")")
+        }
+        .responseDecodable(of: RouteResponse.self) { [weak self] response in
+            switch response.result {
+            case .success(let data):
+                print("서버 응답: \(data)")
+                
+                guard let self = self else { return }
+                // 1박2일 데이터 저장
+                // 1박2일 데이터 저장
+                self.submissionID = data.submission_id
+                self.routeOvernight = data.route_overnight
+                
+                // ---------------------------
+                // 배열 초기화
+                // ---------------------------
+                self.names.removeAll()
+                self.latitudes.removeAll()
+                self.longitudes.removeAll()
+                self.addresses.removeAll()
+                self.imgURLs.removeAll()
+                self.types.removeAll()
+                self.orders.removeAll()
+                
+                self.namesDay1.removeAll()
+                self.latitudesDay1.removeAll()
+                self.longitudesDay1.removeAll()
+                self.addressesDay1.removeAll()
+                self.imgURLsDay1.removeAll()
+                self.typesDay1.removeAll()
+                self.ordersDay1.removeAll()
+                
+                self.namesDay2.removeAll()
+                self.latitudesDay2.removeAll()
+                self.longitudesDay2.removeAll()
+                self.addressesDay2.removeAll()
+                self.imgURLsDay2.removeAll()
+                self.typesDay2.removeAll()
+                self.ordersDay2.removeAll()
+                
+                // ---------------------------
+                // 1. 당일치기 (routes 배열)
+                // ---------------------------
+                if let routeItems = data.route?.routes {
+                    for item in routeItems {
+                        self.names.append(item.name)
+                        self.latitudes.append(String(item.latitude))
+                        self.longitudes.append(String(item.longitude))
+                        self.addresses.append(item.address)
+                        self.imgURLs.append(item.image_url ?? "")
+                        self.types.append(item.type_label)
+                        self.orders.append(String(item.order))
+                    }
+                }
+                
+                // ---------------------------
+                // 2. 1박2일 이상 (routesByDay 딕셔너리)
+                // ---------------------------
+                else if let dayRoutes = data.route?.routesByDay {
+                    for (day, items) in dayRoutes {
+                        for item in items {
+                            switch day {
+                            case "day1":
+                                self.namesDay1.append(item.name)
+                                self.latitudesDay1.append(String(item.latitude))
+                                self.longitudesDay1.append(String(item.longitude))
+                                self.addressesDay1.append(item.address)
+                                self.imgURLsDay1.append(item.image_url ?? "")
+                                self.typesDay1.append(item.type_label)
+                                self.ordersDay1.append(String(item.order))
+                            case "day2":
+                                self.namesDay2.append(item.name)
+                                self.latitudesDay2.append(String(item.latitude))
+                                self.longitudesDay2.append(String(item.longitude))
+                                self.addressesDay2.append(item.address)
+                                self.imgURLsDay2.append(item.image_url ?? "")
+                                self.typesDay2.append(item.type_label)
+                                self.ordersDay2.append(String(item.order))
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+                
+                completion()
+                
+            case .failure(let error):
+                print("에러 발생: \(error)")
+            }
+        }
+    }
+    
+    
+    func fetchRoute(submissionID: Int) {
+        let url = "https://we-did-this.com/route/result/detail"
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(token)"
+        ]
+        
+        let parameters: Parameters = [
+            "submission_id": submissionID
+        ]
+        
+        AF.request(url,
+                   method: .get,
+                   parameters: parameters,
+                   encoding: URLEncoding.default,
+                   headers: headers)
+        .validate()
+        .response { response in
+            switch response.result {
+            case .success:
+                print("성공")
+            case .failure(let error):
+                print("에러 발생:", error)
+            }
+        }
+        
+        
+    }
+}

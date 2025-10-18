@@ -237,9 +237,7 @@ AI가 생성한 방문 순서를 사용자가 직관적으로 이해할 수 있�
 ---
 
 ## 🔗 Links
-
-- **GitHub Repository**: [simoni-git/igeohaebom](https://github.com/simoni-git/igeohaebom)
-- **App Store**: [다운로드 링크 추가 예정]
+- **App Store**: https://apps.apple.com/kr/app/이거해봄-ai-와-함께하는-성주여행-필수앱/id6752301100
 - **경진대회**: 카카오 + 한국관광공사 주관
 
 ---
@@ -257,6 +255,3 @@ AI가 생성한 방문 순서를 사용자가 직관적으로 이해할 수 있�
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
-
-이 프로젝트가 도움이 되셨다면 ⭐️ Star를 눌러주세요!

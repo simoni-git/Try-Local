@@ -251,7 +251,3 @@ AI가 생성한 방문 순서를 사용자가 직관적으로 이해할 수 있�
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
